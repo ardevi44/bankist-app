@@ -104,20 +104,20 @@ const createUsernames = function (accounts) {
 /* Calculate the incomes, outputs and the interest of the account and displays this
 summary in the bottom labels of the UI */
 
-const calcDisplaySummary = function (movements) {
-  const incomes = movements
+const calcDisplaySummary = function (acc) {
+  const incomes = acc.movements
     .filter((mov) => mov > 0)
     .reduce((acc, mov) => acc + mov, 0);
   labelSumIn.textContent = `${incomes}€`;
 
-  const outputs = movements
+  const outputs = acc.movements
     .filter((mov) => mov < 0)
     .reduce((acc, mov) => acc + mov, 0);
   labelSumOut.textContent = `${Math.abs(outputs)}€`;
 
-  const interest = movements
+  const interest = acc.movements
     .filter((mov) => mov > 0)
-    .map((deposit) => (deposit * 1.2) / 100)
+    .map((deposit) => (deposit * acc.interestRate) / 100)
     .filter((int, i, arr) => int >= 1)
     .reduce((acc, int) => acc + int, 0);
   labelSumInterest.textContent = `${interest}€`;
@@ -134,13 +134,20 @@ btnLogin.addEventListener("click", function (e) {
   currentAccount = accounts.find(
     (acc) => acc.username === inputLoginUsername.value
   );
-  console.log(currentAccount);
+
   // using optional chaining
   if (currentAccount?.pin === Number(inputLoginPin.value)) {
-    console.log("LOGIN");
+    // Display UI and message
+    labelWelcome.textContent = `Welcome back, ${
+      currentAccount.owner.split(" ")[0]
+    }`;
   }
-});
+  containerApp.style.opacity = 100;
 
-calcDisplayBalance(account1.movements);
-displayMovements(account1.movements);
-calcDisplaySummary(account1.movements);
+  inputLoginUsername.value = inputLoginPin.value = "";
+  inputLoginPin.blur();
+
+  displayMovements(currentAccount.movements);
+  calcDisplayBalance(currentAccount.movements);
+  calcDisplaySummary(currentAccount);
+});
