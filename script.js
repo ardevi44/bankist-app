@@ -61,9 +61,9 @@ const inputClosePin = document.querySelector(".form__input--pin");
 
 /* Display account's movements into the ui */
 
-const displayMovements = function (movements) {
+const displayMovements = function (acc) {
   containerMovements.innerHTML = "";
-  movements.forEach(function (mov, i) {
+  acc.movements.forEach(function (mov, i) {
     const type = mov > 0 ? "deposit" : "withdrawal";
     const html = `
       <div class="movements__row">
@@ -79,11 +79,11 @@ const displayMovements = function (movements) {
 
 /* Calculate the balance of the account's movements and put it into the UI Label */
 
-const calcDisplayBalance = function (movements) {
-  const balance = movements.reduce((acc, cur) => {
+const calcDisplayBalance = function (acc) {
+  acc.balance = acc.movements.reduce((acc, cur) => {
     return acc + cur;
   }, 0);
-  labelBalance.textContent = `${balance}€`;
+  labelBalance.textContent = `${acc.balance}€`;
 };
 
 // This will create a side effect, cause it modifies some global state variables
@@ -125,10 +125,17 @@ const calcDisplaySummary = function (acc) {
 
 createUsernames(accounts);
 
+const updateUI = function (acc) {
+  displayMovements(currentAccount);
+  calcDisplayBalance(currentAccount);
+  calcDisplaySummary(currentAccount);
+};
+
 // The account that is logged right now.
 let currentAccount;
 
-// Event handler
+/* Handle the login of the user, validating the pin and the current account */
+
 btnLogin.addEventListener("click", function (e) {
   e.preventDefault();
   currentAccount = accounts.find(
@@ -146,8 +153,46 @@ btnLogin.addEventListener("click", function (e) {
     inputLoginUsername.value = inputLoginPin.value = "";
     inputLoginPin.blur();
 
-    displayMovements(currentAccount.movements);
-    calcDisplayBalance(currentAccount.movements);
-    calcDisplaySummary(currentAccount);
+    updateUI(currentAccount);
+  }
+});
+
+/* Remove the content of the inputs in the transfer form. */
+
+const cleanTransferInputs = function () {
+  const transferInputFields = document
+    .querySelector(".form--transfer")
+    .querySelectorAll("input");
+  if (transferInputFields) {
+    for (const input of transferInputFields) {
+      if (input?.type === "text" || input?.type === "number") {
+        input.value = "";
+        input.blur();
+      }
+    }
+  }
+};
+
+/* Execute a transfer from the current account logged to the receiver account */
+
+btnTransfer.addEventListener("click", function (e) {
+  e.preventDefault();
+  const amount = Number(inputTransferAmount.value);
+  const receiverAcc = accounts.find(
+    (acc) => acc.username === inputTransferTo.value
+  );
+
+  cleanTransferInputs();
+
+  if (
+    amount > 0 &&
+    receiverAcc &&
+    currentAccount.balance >= amount &&
+    receiverAcc?.username !== currentAccount.username
+  ) {
+    currentAccount.movements.push(-amount);
+    receiverAcc.movements.push(amount);
+
+    updateUI(currentAccount);
   }
 });
