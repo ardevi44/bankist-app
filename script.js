@@ -159,13 +159,14 @@ btnLogin.addEventListener("click", function (e) {
 
 /* Remove the content of the inputs in the transfer form. */
 
-const cleanTransferInputs = function () {
-  const transferInputFields = document
-    .querySelector(".form--transfer")
-    .querySelectorAll("input");
-  if (transferInputFields) {
-    for (const input of transferInputFields) {
-      if (input?.type === "text" || input?.type === "number") {
+const emptyInputs = function (inputs) {
+  if (inputs) {
+    for (const input of inputs) {
+      if (
+        input?.type === "text" ||
+        input?.type === "number" ||
+        input?.type === "password"
+      ) {
         input.value = "";
         input.blur();
       }
@@ -182,7 +183,9 @@ btnTransfer.addEventListener("click", function (e) {
     (acc) => acc.username === inputTransferTo.value
   );
 
-  cleanTransferInputs();
+  emptyInputs(
+    document.querySelector(".form--transfer").querySelectorAll("input")
+  );
 
   if (
     amount > 0 &&
@@ -195,4 +198,20 @@ btnTransfer.addEventListener("click", function (e) {
 
     updateUI(currentAccount);
   }
+});
+
+btnClose.addEventListener("click", function (e) {
+  e.preventDefault();
+  const userToDelete = (acc) => acc.username === inputCloseUsername.value;
+  if (
+    currentAccount &&
+    inputCloseUsername.value === currentAccount.username &&
+    Number(inputClosePin.value) === currentAccount.pin
+  ) {
+    accounts.splice(accounts.findIndex(userToDelete), 1);
+    containerApp.style.opacity = 0;
+    console.log(accounts);
+  }
+  // PENDING
+  emptyInputs(document.querySelector(".form--close").querySelectorAll("input"));
 });
