@@ -200,6 +200,26 @@ btnTransfer.addEventListener("click", function (e) {
   }
 });
 
+// Request a loan and charge it to the account's movements
+
+btnLoan.addEventListener("click", function (e) {
+  e.preventDefault();
+  const amount = Number(inputLoanAmount.value);
+
+  if (
+    amount > 0 &&
+    currentAccount.movements.some((mov) => mov >= amount * 0.1)
+  ) {
+    currentAccount.movements.push(amount);
+    updateUI(currentAccount);
+    emptyInputs(
+      document.querySelector(".form--loan").querySelectorAll("input")
+    );
+  }
+});
+
+// Delete the current account from the accounts array.
+
 btnClose.addEventListener("click", function (e) {
   e.preventDefault();
   const userToDelete = (acc) => acc.username === inputCloseUsername.value;
@@ -212,6 +232,5 @@ btnClose.addEventListener("click", function (e) {
     containerApp.style.opacity = 0;
     console.log(accounts);
   }
-  // PENDING
   emptyInputs(document.querySelector(".form--close").querySelectorAll("input"));
 });
